@@ -130,18 +130,63 @@ class KnowledgeBase(object):
         # Implementation goes here
         # Not required for the extra credit assignment
 
+
     def kb_explain(self, fact_or_rule):
         """
         Explain where the fact or rule comes from
-
         Args:
             fact_or_rule (Fact or Rule) - Fact or rule to be explained
-
         Returns:
             string explaining hierarchical support from other Facts and rules
         """
         ####################################################
         # Student code goes here
+        if isinstance(fact_or_rule, Rule):
+            if fact_or_rule in self.rules:
+                return self.explain_recursive(fact_or_rule, 0)
+            else:
+                return "rule is not in the KB"
+
+        elif isinstance(fact_or_rule, Fact):
+            if fact_or_rule in self.facts:
+                return self.explain_recursive(fact_or_rule, 0)
+            else:
+                return "fact is not in the KB"
+        else:
+            return False
+
+
+
+    def explain_recursive(self, fact_or_rule, indent):
+        string = ''
+        a = ''
+        num = ''
+        for i in range(indent):
+            num += '    '
+
+        if isinstance(fact_or_rule, Rule):
+            rule = self._get_rule(fact_or_rule)
+            if rule.asserted:
+                a = ' ASSERTED'
+            string += num + 'rule: (' + str(rule.lhs[0])
+            for index in range(1, len(rule.lhs)):
+                string += ', ' + str(rule.lhs[index])
+            string += ') -> ' + str(rule.rhs) + a + '\n'
+
+        else:
+            fact_or_rule = self._get_fact(fact_or_rule)
+            if fact_or_rule.asserted:
+                a = ' ASSERTED'
+            string += num + 'fact: ' + str(fact_or_rule.statement) + a + '\n'
+
+        for pairs in fact_or_rule.supported_by:
+            string += num + '  SUPPORTED BY\n'
+            for each in pairs:
+                string += self.explain_recursive(each, indent + 1)
+
+        return string
+
+
 
 
 class InferenceEngine(object):
@@ -161,3 +206,7 @@ class InferenceEngine(object):
         ####################################################
         # Implementation goes here
         # Not required for the extra credit assignment
+
+
+
+
